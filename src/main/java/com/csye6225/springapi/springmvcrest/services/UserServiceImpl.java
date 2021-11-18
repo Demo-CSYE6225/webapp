@@ -402,7 +402,8 @@ public ResponseEntity<Profile> UpdateProfileInfo(@RequestParam(value = "profileP
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     } catch (Exception e) {
-        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        Profile profile = new Profile(e.toString(),"",current_date,"");
+        return new ResponseEntity<>(profile,HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }
