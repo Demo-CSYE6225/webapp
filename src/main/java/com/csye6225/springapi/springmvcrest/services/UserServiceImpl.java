@@ -293,83 +293,126 @@ public class UserServiceImpl {
     }
 
 
-    @PostMapping("/self/pic")
-    public ResponseEntity<Profile> UpdateProfileInfo(@RequestBody byte[] byteFile ,@RequestHeader("authorization") List header) throws IOException {
-        statsd.incrementCounter("UpdateProfileInfoApi");
-        long start = System.currentTimeMillis();
-        String fileUrl = "";
-        String fileName = new Date().getTime()+"-image.jpeg";
-        // String fileName = multipartFile.getOriginalFilename();
-        File file = new File(fileName);
-            FileOutputStream fos = new FileOutputStream(file);
-            fos.write(byteFile);
-            fos.close();
-        String current_date = java.time.Clock.systemUTC().instant().toString();
-        try {
-            // File file = convertMultiPartToFile(multipartFile);
-//            fileUrl = bucketURL+"/"+bucket+"/"+fileName;
-            String[] result = authenticate_user(header);
-            User userData = userRepository.findByUsername(result[0]);
-            String userID = userData.getId();
-            fileUrl = userID+"/"+fileName;
+//    @PostMapping("/self/pic")
+//    public ResponseEntity<Profile> UpdateProfileInfo(@RequestBody byte[] byteFile ,@RequestHeader("authorization") List header) throws IOException {
+//        statsd.incrementCounter("UpdateProfileInfoApi");
+//        long start = System.currentTimeMillis();
+//        String fileUrl = "";
+//        String fileName = new Date().getTime()+"-image.jpeg";
+//        // String fileName = multipartFile.getOriginalFilename();
+//        File file = new File(fileName);
+//            FileOutputStream fos = new FileOutputStream(file);
+//            fos.write(byteFile);
+//            fos.close();
+//        String current_date = java.time.Clock.systemUTC().instant().toString();
+//        try {
+//            // File file = convertMultiPartToFile(multipartFile);
+////            fileUrl = bucketURL+"/"+bucket+"/"+fileName;
+//            String[] result = authenticate_user(header);
+//            User userData = userRepository.findByUsername(result[0]);
+//            String userID = userData.getId();
+//            fileUrl = userID+"/"+fileName;
+//
+//            if (result != null) {
+//                logger.info("Calling find profile database call");
+//                long startdb = System.currentTimeMillis();
+//                Profile imageData = imageRepository.findByUserid(userID);
+//                long enddb = System.currentTimeMillis();
+//                long timeElapseddb = enddb - startdb;
+//                logger.info("Time taken by get profile database call is " + timeElapseddb + "ms");
+//                statsd.recordExecutionTime("getProfileInfoDBTime",timeElapseddb);
+//
+//                if (imageData != null) {
+//                    logger.info("Calling AWS S3 delete");
+//                    startdb = System.currentTimeMillis();
+//                    s3.deleteObject(bucket, imageData.getUrl());
+//                    enddb = System.currentTimeMillis();
+//                    timeElapseddb = enddb - startdb;
+//                    logger.info("Time taken by S3 delete is " + timeElapseddb + "ms");
+//                    statsd.recordExecutionTime("DeleteS3Time",timeElapseddb);
+//
+//                    imageData.setUpload_date(current_date);
+//                    imageData.setFile_name(fileName);
+//                    imageData.setUrl(fileUrl);
+//                } else {
+//                    imageData = new Profile(fileName, fileUrl, current_date, userID);
+//                }
+//
+//                logger.info("Calling AWS S3 put");
+//                startdb = System.currentTimeMillis();
+//                s3.putObject(bucket,userID+"/"+fileName,file );
+//                enddb = System.currentTimeMillis();
+//                timeElapseddb = enddb - startdb;
+//                logger.info("Time taken by S3 put is " + timeElapseddb + "ms");
+//                statsd.recordExecutionTime("PutS3Time",timeElapseddb);
+//
+//                logger.info("Calling save profile database call");
+//                startdb = System.currentTimeMillis();
+//                imageRepository.save(imageData);
+//                enddb = System.currentTimeMillis();
+//                timeElapseddb = enddb - startdb;
+//                logger.info("Time taken by save profile database call is " + timeElapseddb + "ms");
+//                statsd.recordExecutionTime("saveProfileDBTime",timeElapseddb);
+//                logger.info("**********User details save successfully !**********");
+//
+//                long end = System.currentTimeMillis();
+//                long timeElapsed = end - start;
+//                logger.info("Time taken by update profile api call is " + timeElapsed + "ms");
+//                statsd.recordExecutionTime("updateProfileInfoAPITime",timeElapsed);
+//
+//                return new ResponseEntity<>(HttpStatus.CREATED);
+//            }
+//            logger.error("Invalid credentials");
+//            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+//        } catch (Exception e) {
+//        logger.info("**********Exception!**********");
+//        logger.error(e.toString());
+//         Profile profile = new Profile(e.toString(),"",current_date,"");
+//        return new ResponseEntity<>(profile,HttpStatus.BAD_REQUEST);
+//        }
+//
+//    }
+@PostMapping("/self/pic")
+public ResponseEntity<Profile> UpdateProfileInfo(@RequestParam(value = "profilePic") MultipartFile multipartFile,@RequestHeader("authorization") List header) {
+    String fileUrl = "";
+    String fileName = multipartFile.getOriginalFilename();
+    String current_date = java.time.Clock.systemUTC().instant().toString();
+    try {
+        File file = convertMultiPartToFile(multipartFile);
+        String fileNameWithDate = new Date().getTime()+"-"+fileName.replace(" ", "_");
+//            fileUrl = bucketURL+"/"+bucket+"/"+fileNameWithDate;
+        String[] result = authenticate_user(header);
+        User userData = userRepository.findByUsername(result[0]);
+        String userID = userData.getId();
+        fileUrl = userID+"/"+fileNameWithDate;
 
-            if (result != null) {
-                logger.info("Calling find profile database call");
-                long startdb = System.currentTimeMillis();
-                Profile imageData = imageRepository.findByUserid(userID);
-                long enddb = System.currentTimeMillis();
-                long timeElapseddb = enddb - startdb;
-                logger.info("Time taken by get profile database call is " + timeElapseddb + "ms");
-                statsd.recordExecutionTime("getProfileInfoDBTime",timeElapseddb);
+        if (result != null) {
+            Profile imageData = imageRepository.findByUserid(userID);
 
-                if (imageData != null) {
-                    logger.info("Calling AWS S3 delete");
-                    startdb = System.currentTimeMillis();
-                    s3.deleteObject(bucket, imageData.getUrl());
-                    enddb = System.currentTimeMillis();
-                    timeElapseddb = enddb - startdb;
-                    logger.info("Time taken by S3 delete is " + timeElapseddb + "ms");
-                    statsd.recordExecutionTime("DeleteS3Time",timeElapseddb);
-
-                    imageData.setUpload_date(current_date);
-                    imageData.setFile_name(fileName);
-                    imageData.setUrl(fileUrl);
-                } else {
-                    imageData = new Profile(fileName, fileUrl, current_date, userID);
-                }
-
-                logger.info("Calling AWS S3 put");
-                startdb = System.currentTimeMillis();
-                s3.putObject(bucket,userID+"/"+fileName,file );
-                enddb = System.currentTimeMillis();
-                timeElapseddb = enddb - startdb;
-                logger.info("Time taken by S3 put is " + timeElapseddb + "ms");
-                statsd.recordExecutionTime("PutS3Time",timeElapseddb);
-
-                logger.info("Calling save profile database call");
-                startdb = System.currentTimeMillis();
-                imageRepository.save(imageData);
-                enddb = System.currentTimeMillis();
-                timeElapseddb = enddb - startdb;
-                logger.info("Time taken by save profile database call is " + timeElapseddb + "ms");
-                statsd.recordExecutionTime("saveProfileDBTime",timeElapseddb);
-                logger.info("**********User details save successfully !**********");
-
-                long end = System.currentTimeMillis();
-                long timeElapsed = end - start;
-                logger.info("Time taken by update profile api call is " + timeElapsed + "ms");
-                statsd.recordExecutionTime("updateProfileInfoAPITime",timeElapsed);
-
-                return new ResponseEntity<>(HttpStatus.CREATED);
+            if (imageData != null) {
+                s3.deleteObject(bucket, imageData.getUrl());
+                imageData.setUpload_date(current_date);
+                imageData.setFile_name(fileNameWithDate);
+                imageData.setUrl(fileUrl);
+            } else {
+                imageData = new Profile(fileNameWithDate, fileUrl, current_date, userID);
             }
-            logger.error("Invalid credentials");
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } catch (Exception e) {
-        logger.info("**********Exception!**********");
-        logger.error(e.toString());
-         Profile profile = new Profile(e.toString(),"",current_date,"");
-        return new ResponseEntity<>(profile,HttpStatus.BAD_REQUEST);
+            s3.putObject(bucket,userID+"/"+fileNameWithDate,file );
+            return new ResponseEntity<>(imageRepository.save(imageData), HttpStatus.CREATED);
         }
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    } catch (Exception e) {
+        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+}
+
+    private File convertMultiPartToFile(MultipartFile  file) throws IOException {
+        File convertedFile = new File(file.getOriginalFilename());
+        FileOutputStream fos = new FileOutputStream(convertedFile);
+        fos.write(file.getBytes());
+        fos.close();
+        return convertedFile;
 
     }
     }
