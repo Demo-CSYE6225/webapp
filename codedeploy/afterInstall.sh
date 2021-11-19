@@ -5,4 +5,3 @@ sudo chmod 777 amazon-cloudwatch-agent
 sudo systemctl start amazon-cloudwatch-agent
 
 sudo chmod 777 /home/ubuntu/spring-mvc-rest-0.0.1-SNAPSHOT.jar
-sudo java -jar /home/ubuntu/spring-mvc-rest-0.0.1-SNAPSHOT.jar stop
