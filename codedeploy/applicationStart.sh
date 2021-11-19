@@ -6,4 +6,4 @@ sudo systemctl start amazon-cloudwatch-agent
 sleep 10
 sudo kill -9 $(sudo lsof -t -i:8080)
 sleep 10
-nohup java -jar /home/ubuntu/spring-mvc-rest-0.0.1-SNAPSHOT.jar > /tmp/webapplog.txt 2>&1
+nohup java -jar /home/ubuntu/spring-mvc-rest-0.0.1-SNAPSHOT.jar > /tmp/webapplog.txt &
