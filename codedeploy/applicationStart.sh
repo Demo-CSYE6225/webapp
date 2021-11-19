@@ -4,4 +4,4 @@ sudo chown -R ubuntu:ubuntu /home/ubuntu/*
 sudo systemctl stop tomcat9
 sudo systemctl start amazon-cloudwatch-agent
 sudo kill -9 $(sudo lsof -t -i:8080)
-sudo java -jar /home/ubuntu/spring-mvc-rest-0.0.1-SNAPSHOT.jar > /dev/null 2. /dev/null < /dev/null &
+sudo java -jar /home/ubuntu/spring-mvc-rest-0.0.1-SNAPSHOT.jar > /home/ubuntu/webapplog.txt &
