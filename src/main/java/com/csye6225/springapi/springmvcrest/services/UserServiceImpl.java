@@ -372,49 +372,5 @@ public class UserServiceImpl {
         }
 
     }
-//@PostMapping("/self/pic")
-//public ResponseEntity<Profile> UpdateProfileInfo(@RequestParam(value = "profilePic") MultipartFile multipartFile,@RequestHeader("authorization") List header) {
-//    String fileUrl = "";
-//    String fileName = multipartFile.getOriginalFilename();
-//    String current_date = java.time.Clock.systemUTC().instant().toString();
-//    try {
-//        File file = convertMultiPartToFile(multipartFile);
-//        String fileNameWithDate = new Date().getTime()+"-"+fileName.replace(" ", "_");
-////            fileUrl = bucketURL+"/"+bucket+"/"+fileNameWithDate;
-//        String[] result = authenticate_user(header);
-//        User userData = userRepository.findByUsername(result[0]);
-//        String userID = userData.getId();
-//        fileUrl = userID+"/"+fileNameWithDate;
-//
-//        if (result != null) {
-//            Profile imageData = imageRepository.findByUserid(userID);
-//
-//            if (imageData != null) {
-//                s3.deleteObject(bucket, imageData.getUrl());
-//                imageData.setUpload_date(current_date);
-//                imageData.setFile_name(fileNameWithDate);
-//                imageData.setUrl(fileUrl);
-//            } else {
-//                imageData = new Profile(fileNameWithDate, fileUrl, current_date, userID);
-//            }
-//            s3.putObject(bucket,userID+"/"+fileNameWithDate,file );
-//            return new ResponseEntity<>(imageRepository.save(imageData), HttpStatus.CREATED);
-//        }
-//        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-//    } catch (Exception e) {
-//        Profile profile = new Profile(e.toString(),"",current_date,"");
-//        return new ResponseEntity<>(profile,HttpStatus.INTERNAL_SERVER_ERROR);
-//    }
-//
-//}
-
-    private File convertMultiPartToFile(MultipartFile  file) throws IOException {
-        File convertedFile = new File(file.getOriginalFilename());
-        FileOutputStream fos = new FileOutputStream(convertedFile);
-        fos.write(file.getBytes());
-        fos.close();
-        return convertedFile;
-
-    }
-    }
+}
 

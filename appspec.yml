@@ -4,7 +4,8 @@ os: linux
 files:
   - source: ./target/spring-mvc-rest-0.0.1-SNAPSHOT.jar
     destination: /home/ubuntu
-
+  - source: cloudwatch-agent.json
+    destination: /home/ubuntu
 hooks:
   AfterInstall:
   - location: ./codedeploy/afterInstall.sh
