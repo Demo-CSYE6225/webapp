@@ -17,14 +17,14 @@ import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
 @Configuration
-@EnableTransactionManagement
-@EnableJpaRepositories(
-        entityManagerFactoryRef = "userEntityManagerFactory",
-        transactionManagerRef = "userTransactionManager",
-        basePackages = {
-                "com.csye6225.springapi.springmvcrest.repositories"
-        }
-)
+//@EnableTransactionManagement
+//@EnableJpaRepositories(
+//        entityManagerFactoryRef = "userEntityManagerFactory",
+//        transactionManagerRef = "userTransactionManager",
+//        basePackages = {
+//                "com.csye6225.springapi.springmvcrest.repositories"
+//        }
+//)
 public class UserConfiguration {
 
     @Primary
