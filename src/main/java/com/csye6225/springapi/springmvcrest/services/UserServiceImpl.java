@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,8 +28,8 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.logging.Logger;
+
 
 @RestController
 @RequestMapping("/v1/user")
@@ -42,8 +43,7 @@ public class UserServiceImpl {
 
     @Autowired
     private StatsDClient statsd;
-
-    private Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+    public static final Logger logger = Logger.getLogger(UserServiceImpl.class.getName());
     @Autowired
     private AmazonS3 s3;
 //    final AmazonS3 s3 = AmazonS3ClientBuilder.standard().withRegion(Regions.DEFAULT_REGION).build();
@@ -80,6 +80,7 @@ public class UserServiceImpl {
     }
 
     @GetMapping("/self")
+    @Transactional("imageTransactionManager")
     public ResponseEntity<User> GetUserInfo( @RequestHeader("authorization") List header) {
         try{
             statsd.incrementCounter("GetUserInfoApi");
@@ -100,18 +101,19 @@ public class UserServiceImpl {
                 logger.info("**********User details fetched successfully !**********");
                 return new ResponseEntity<>(response, HttpStatus.OK);
             }
-            logger.error("Invalid credentials");
+            logger.severe("Invalid credentials");
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
         }
         catch (Exception e){
             logger.info("**********Exception!**********");
-            logger.error(e.toString());
+            logger.severe(e.toString());
             return new ResponseEntity<>(null,HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @PutMapping("/self")
+    @Transactional("userTransactionManager")
     public ResponseEntity<User> UpdateUserInfo(@RequestBody UserInfo user,@RequestHeader("authorization") List header) {
         try {
             statsd.incrementCounter("UpdateUserApi");
@@ -147,16 +149,17 @@ public class UserServiceImpl {
                     return new ResponseEntity<>(HttpStatus.OK);
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }
-            logger.error("Invalid credentials");
+            logger.severe("Invalid credentials");
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             logger.info("**********Exception!**********");
-            logger.error(e.toString());
+            logger.severe(e.toString());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @PostMapping
+    @Transactional("userTransactionManager")
     public ResponseEntity<User> CreateUser(@RequestBody UserInfo user) {
         try{
             statsd.incrementCounter("CreateUserApi");
@@ -193,12 +196,13 @@ public class UserServiceImpl {
 
         } catch (Exception e){
             logger.info("**********Exception!**********");
-            logger.error(e.toString());
+            logger.severe(e.toString());
             return new ResponseEntity<>(null,HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @GetMapping("/self/pic")
+    @Transactional("imageTransactionManager")
     public ResponseEntity<Profile> GetProfileInfo(@RequestHeader("authorization") List header) {
         try{
             statsd.incrementCounter("GetProfileInfoApi");
@@ -226,17 +230,18 @@ public class UserServiceImpl {
                 logger.info("**********Profile details fetched successfully !**********");
                 return new ResponseEntity<>(image,status);
             }
-            logger.error("Invalid credentials");
+            logger.severe("Invalid credentials");
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         catch (Exception e){
             logger.info("**********Exception!**********");
-            logger.error(e.toString());
+            logger.severe(e.toString());
             return new ResponseEntity<>(null,HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @DeleteMapping("/self/pic")
+    @Transactional("userTransactionManager")
     public ResponseEntity<Profile> DeleteProfileInfo(@RequestHeader("authorization") List header) {
         try{
             statsd.incrementCounter("DeleteProfileInfoApi");
@@ -282,18 +287,18 @@ public class UserServiceImpl {
 
                 return new ResponseEntity<>(status);
             }
-            logger.error("Invalid credentials");
+            logger.severe("Invalid credentials");
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         catch (Exception e){
             logger.info("**********Exception!**********");
-            logger.error(e.toString());
+            logger.severe(e.toString());
             return new ResponseEntity<>(null,HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-// test
 
     @PostMapping("/self/pic")
+    @Transactional("userTransactionManager")
     public ResponseEntity<Profile> UpdateProfileInfo(@RequestBody byte[] byteFile ,@RequestHeader("authorization") List header) throws IOException {
         statsd.incrementCounter("UpdateProfileInfoApi");
         long start = System.currentTimeMillis();
@@ -362,11 +367,11 @@ public class UserServiceImpl {
 
                 return new ResponseEntity<>(HttpStatus.CREATED);
             }
-            logger.error("Invalid credentials");
+            logger.severe("Invalid credentials");
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
         logger.info("**********Exception!**********");
-        logger.error(e.toString());
+        logger.severe(e.toString());
          Profile profile = new Profile(e.toString(),"",current_date,"");
         return new ResponseEntity<>(profile,HttpStatus.BAD_REQUEST);
         }
