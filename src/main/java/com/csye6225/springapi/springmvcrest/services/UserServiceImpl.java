@@ -201,7 +201,7 @@ public class UserServiceImpl {
                 request.setReturnValues(ReturnValue.ALL_OLD);
                 Map<String, AttributeValue> map = new HashMap<>();
                 map.put("AccessToken", new AttributeValue(token));
-                map.put("Email", new AttributeValue(user.getUsername()));
+                map.put("id", new AttributeValue(user.getUsername()));
                 map.put("TTL", new AttributeValue(String.valueOf(expirationTTL)));
                 request.setItem(map);
                 logger.info("Dynamodb before Put");
