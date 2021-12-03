@@ -9,6 +9,7 @@ import com.csye6225.springapi.springmvcrest.domain.Profile;
 import com.csye6225.springapi.springmvcrest.domain.User;
 import com.csye6225.springapi.springmvcrest.model.UserInfo;
 import com.csye6225.springapi.springmvcrest.repositories.ImageRepository;
+import com.csye6225.springapi.springmvcrest.repositories.UserReadOnlyRepository;
 import com.csye6225.springapi.springmvcrest.repositories.UserRepository;
 import com.timgroup.statsd.StatsDClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,9 @@ public class UserServiceImpl {
     private final ImageRepository imageRepository;
 
     @Autowired
+    private final UserReadOnlyRepository userReadOnlyRepository;
+
+    @Autowired
     private StatsDClient statsd;
     public static final Logger logger = Logger.getLogger(UserServiceImpl.class.getName());
     @Autowired
@@ -56,9 +60,11 @@ public class UserServiceImpl {
 
     Crypt crypt = new Crypt();
 
-    public UserServiceImpl(UserRepository userRepository, ImageRepository imageRepository) {
+    public UserServiceImpl(UserRepository userRepository, ImageRepository imageRepository, UserReadOnlyRepository userReadOnlyRepository) {
         this.userRepository = userRepository;
         this.imageRepository = imageRepository;
+        this.userReadOnlyRepository = userReadOnlyRepository;
+
     }
 
     public String[] authenticate_user(List header){
@@ -80,7 +86,6 @@ public class UserServiceImpl {
     }
 
     @GetMapping("/self")
-    @Transactional("imageTransactionManager")
     public ResponseEntity<User> GetUserInfo( @RequestHeader("authorization") List header) {
         try{
             statsd.incrementCounter("GetUserInfoApi");
@@ -89,7 +94,7 @@ public class UserServiceImpl {
             if(result !=null) {
                 logger.info("Calling find user database call");
                 long startdb = System.currentTimeMillis();
-                 User response = userRepository.findByUsername(result[0]);
+                 User response = userReadOnlyRepository.findByUsername(result[0]);
                 long enddb = System.currentTimeMillis();
                 long timeElapseddb = enddb - startdb;
                 logger.info("Time taken by get user database call is " + timeElapseddb + "ms");
@@ -113,7 +118,6 @@ public class UserServiceImpl {
     }
 
     @PutMapping("/self")
-    @Transactional("userTransactionManager")
     public ResponseEntity<User> UpdateUserInfo(@RequestBody UserInfo user,@RequestHeader("authorization") List header) {
         try {
             statsd.incrementCounter("UpdateUserApi");
@@ -159,7 +163,6 @@ public class UserServiceImpl {
     }
 
     @PostMapping
-    @Transactional("userTransactionManager")
     public ResponseEntity<User> CreateUser(@RequestBody UserInfo user) {
         try{
             statsd.incrementCounter("CreateUserApi");
@@ -202,7 +205,6 @@ public class UserServiceImpl {
     }
 
     @GetMapping("/self/pic")
-    @Transactional("imageTransactionManager")
     public ResponseEntity<Profile> GetProfileInfo(@RequestHeader("authorization") List header) {
         try{
             statsd.incrementCounter("GetProfileInfoApi");
@@ -241,7 +243,6 @@ public class UserServiceImpl {
     }
 
     @DeleteMapping("/self/pic")
-    @Transactional("userTransactionManager")
     public ResponseEntity<Profile> DeleteProfileInfo(@RequestHeader("authorization") List header) {
         try{
             statsd.incrementCounter("DeleteProfileInfoApi");
@@ -298,7 +299,6 @@ public class UserServiceImpl {
     }
 
     @PostMapping("/self/pic")
-    @Transactional("userTransactionManager")
     public ResponseEntity<Profile> UpdateProfileInfo(@RequestBody byte[] byteFile ,@RequestHeader("authorization") List header) throws IOException {
         statsd.incrementCounter("UpdateProfileInfoApi");
         long start = System.currentTimeMillis();
