@@ -185,12 +185,14 @@ public class UserServiceImpl {
             if(findUser == null){
                 dynamodbClient = AmazonDynamoDBClientBuilder.defaultClient();
                 logger.info("DynamoDbClinet built successfully");
-
+                logger.info("---------------------------------");
+                logger.info(dynamodbClient.toString());
+                logger.info("---------------------------------");
                 Instant currentInstant = Instant.now();
                 Instant expirationInstant = currentInstant.plusSeconds(300);
 
                 long expirationTTL = expirationInstant.getEpochSecond();
-
+                logger.info("Expiration TTL : "+expirationTTL);
                 String token = UUID.randomUUID().toString();
 
                 PutItemRequest request = new PutItemRequest();
@@ -202,7 +204,10 @@ public class UserServiceImpl {
                 map.put("Email", new AttributeValue(user.getUsername()));
                 map.put("TTL", new AttributeValue(String.valueOf(expirationTTL)));
                 request.setItem(map);
+                logger.info("Dynamodb before Put");
+
                 dynamodbClient.putItem(request);
+                logger.info("Dynamodb after Put");
 
                 User userData = new User(user.getFirst_name(),user.getLast_name(),user.getUsername(),
                         crypt.hashPassword(user.getPassword()),current_date,current_date);
