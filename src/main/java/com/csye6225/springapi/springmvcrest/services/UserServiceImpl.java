@@ -2,6 +2,12 @@ package com.csye6225.springapi.springmvcrest.services;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.regions.Regions;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.PutItemRequest;
+import com.amazonaws.services.dynamodbv2.model.ReturnConsumedCapacity;
+import com.amazonaws.services.dynamodbv2.model.ReturnValue;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.csye6225.springapi.springmvcrest.Security.Crypt;
@@ -25,10 +31,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.Date;
+import java.time.Instant;
+import java.util.*;
 import java.util.List;
-import java.util.UUID;
 import java.util.logging.Logger;
 
 
@@ -44,7 +49,7 @@ public class UserServiceImpl {
 
     @Autowired
     private final UserReadOnlyRepository userReadOnlyRepository;
-
+    AmazonDynamoDB dynamodbClient;
     @Autowired
     private StatsDClient statsd;
     public static final Logger logger = Logger.getLogger(UserServiceImpl.class.getName());
@@ -178,6 +183,27 @@ public class UserServiceImpl {
 
             HttpStatus status = HttpStatus.BAD_REQUEST;
             if(findUser == null){
+                dynamodbClient = AmazonDynamoDBClientBuilder.defaultClient();
+                logger.info("DynamoDbClinet built successfully");
+
+                Instant currentInstant = Instant.now();
+                Instant expirationInstant = currentInstant.plusSeconds(300);
+
+                long expirationTTL = expirationInstant.getEpochSecond();
+
+                String token = UUID.randomUUID().toString();
+
+                PutItemRequest request = new PutItemRequest();
+                request.setTableName("csye6225-dynamo");
+                request.setReturnConsumedCapacity(ReturnConsumedCapacity.TOTAL);
+                request.setReturnValues(ReturnValue.ALL_OLD);
+                Map<String, AttributeValue> map = new HashMap<>();
+                map.put("AccessToken", new AttributeValue(token));
+                map.put("Email", new AttributeValue(user.getUsername()));
+                map.put("TTL", new AttributeValue(String.valueOf(expirationTTL)));
+                request.setItem(map);
+                dynamodbClient.putItem(request);
+
                 User userData = new User(user.getFirst_name(),user.getLast_name(),user.getUsername(),
                         crypt.hashPassword(user.getPassword()),current_date,current_date);
                 logger.info("Calling save user database call");
