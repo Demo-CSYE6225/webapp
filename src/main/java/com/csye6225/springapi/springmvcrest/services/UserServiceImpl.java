@@ -10,6 +10,9 @@ import com.amazonaws.services.dynamodbv2.model.ReturnConsumedCapacity;
 import com.amazonaws.services.dynamodbv2.model.ReturnValue;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.sns.AmazonSNS;
+import com.amazonaws.services.sns.AmazonSNSClientBuilder;
+import com.amazonaws.services.sns.model.PublishRequest;
 import com.csye6225.springapi.springmvcrest.Security.Crypt;
 import com.csye6225.springapi.springmvcrest.domain.Profile;
 import com.csye6225.springapi.springmvcrest.domain.User;
@@ -18,6 +21,7 @@ import com.csye6225.springapi.springmvcrest.repositories.ImageRepository;
 import com.csye6225.springapi.springmvcrest.repositories.UserReadOnlyRepository;
 import com.csye6225.springapi.springmvcrest.repositories.UserRepository;
 import com.timgroup.statsd.StatsDClient;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -50,13 +54,15 @@ public class UserServiceImpl {
     @Autowired
     private final UserReadOnlyRepository userReadOnlyRepository;
     AmazonDynamoDB dynamodbClient;
+    AmazonSNS snsClient;
     @Autowired
     private StatsDClient statsd;
     public static final Logger logger = Logger.getLogger(UserServiceImpl.class.getName());
     @Autowired
     private AmazonS3 s3;
 //    final AmazonS3 s3 = AmazonS3ClientBuilder.standard().withRegion(Regions.DEFAULT_REGION).build();
-
+@Value("${snstopic}")
+private String snstopic;
     @Value("${bucketName}")
     private String bucket;
 //    private String bucket="csye6225a4.prod.domain.tld";
@@ -208,6 +214,19 @@ public class UserServiceImpl {
 
                 dynamodbClient.putItem(request);
                 logger.info("Dynamodb after Put");
+
+
+                snsClient = AmazonSNSClientBuilder.defaultClient();
+                JSONObject json = new JSONObject();
+                json.put("AccessToken", token);
+                json.put("EmailAddress",user.getUsername());
+                json.put("MessageType","email");
+                PublishRequest publishReq = new PublishRequest()
+                        .withTopicArn(snstopic)
+                        .withMessage(json.toString());
+                snsClient.publish(publishReq);
+
+
 
                 User userData = new User(user.getFirst_name(),user.getLast_name(),user.getUsername(),
                         crypt.hashPassword(user.getPassword()),current_date,current_date);
