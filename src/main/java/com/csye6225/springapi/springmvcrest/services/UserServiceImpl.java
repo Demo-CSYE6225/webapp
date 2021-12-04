@@ -223,6 +223,7 @@ private String snstopic;
 
 
                 snsClient = AmazonSNSClientBuilder.defaultClient();
+                logger.info("SNSClinet built successfully");
                 JSONObject json = new JSONObject();
                 json.put("AccessToken", token);
                 json.put("EmailAddress",user.getUsername());
@@ -230,7 +231,9 @@ private String snstopic;
                 PublishRequest publishReq = new PublishRequest()
                         .withTopicArn(snstopic)
                         .withMessage(json.toString());
+                logger.info("SNS before publish");
                 snsClient.publish(publishReq);
+                logger.info("SNS after publish");
 
 
 
