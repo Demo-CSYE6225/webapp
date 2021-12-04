@@ -55,7 +55,7 @@ public class UserServiceImpl {
     @Autowired
     private final UserReadOnlyRepository userReadOnlyRepository;
 
-    @Autowired
+ //   @Autowired
 //    private final ImageReadOnlyRepository imageReadOnlyRepository;
 
 
