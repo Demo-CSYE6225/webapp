@@ -17,6 +17,7 @@ import com.csye6225.springapi.springmvcrest.Security.Crypt;
 import com.csye6225.springapi.springmvcrest.domain.Profile;
 import com.csye6225.springapi.springmvcrest.domain.User;
 import com.csye6225.springapi.springmvcrest.model.UserInfo;
+import com.csye6225.springapi.springmvcrest.repositories.ImageReadOnlyRepository;
 import com.csye6225.springapi.springmvcrest.repositories.ImageRepository;
 import com.csye6225.springapi.springmvcrest.repositories.UserReadOnlyRepository;
 import com.csye6225.springapi.springmvcrest.repositories.UserRepository;
@@ -53,6 +54,11 @@ public class UserServiceImpl {
 
     @Autowired
     private final UserReadOnlyRepository userReadOnlyRepository;
+
+    @Autowired
+    private final ImageReadOnlyRepository imageReadOnlyRepository;
+
+
     AmazonDynamoDB dynamodbClient;
     AmazonSNS snsClient;
     @Autowired
@@ -71,11 +77,11 @@ private String snstopic;
 
     Crypt crypt = new Crypt();
 
-    public UserServiceImpl(UserRepository userRepository, ImageRepository imageRepository, UserReadOnlyRepository userReadOnlyRepository) {
+    public UserServiceImpl(UserRepository userRepository, ImageRepository imageRepository, UserReadOnlyRepository userReadOnlyRepository, ImageReadOnlyRepository imageReadOnlyRepository ) {
         this.userRepository = userRepository;
         this.imageRepository = imageRepository;
         this.userReadOnlyRepository = userReadOnlyRepository;
-
+        this.imageReadOnlyRepository = imageReadOnlyRepository;
     }
 
     public String[] authenticate_user(List header){
@@ -263,11 +269,11 @@ private String snstopic;
             HttpStatus status;
             if(result !=null){
 
-                User userData = userRepository.findByUsername(result[0]);
+                User userData = userReadOnlyRepository.findByUsername(result[0]);
                 String userID = userData.getId();
                 logger.info("Calling find profile database call");
                 long startdb = System.currentTimeMillis();
-                Profile image = imageRepository.findByUserid(userID);
+                Profile image = imageReadOnlyRepository.findByUserid(userID);
                 long enddb = System.currentTimeMillis();
                 long timeElapseddb = enddb - startdb;
                 logger.info("Time taken by get profile database call is " + timeElapseddb + "ms");
