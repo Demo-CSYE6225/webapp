@@ -17,6 +17,8 @@ public class User {
     private String password;
     private String account_created;
     private String account_updated;
+    private Boolean verified;
+    private String verified_on;
 
     public User() {
 
@@ -30,6 +32,8 @@ public class User {
         this.password = password;
         this.account_created = account_created;
         this.account_updated = account_updated;
+        this.verified = false;
+        this.verified_on = "";
     }
 
 
@@ -81,11 +85,24 @@ public class User {
     public String getId() {
         return id;
     }
-  
+
     @JsonIgnore
     public String getPassword() {
         return password;
     }
 
+    public Boolean getVerified() {
+        return verified;
+    }
 
+    public void setVerified(Boolean verified) {
+        this.verified = verified;
+    }
+    public String getVerified_on() {
+        return verified_on;
+    }
+
+    public void setVerified_on(String verified_on) {
+        this.verified_on = verified_on;
+    }
 }
