@@ -436,10 +436,11 @@ public class UserServiceImpl {
     @GetMapping("/verifyUserEmail")
     public ResponseEntity<String> verifyUserEmail(@RequestParam("email") String verifyEmail, @RequestParam("token") String verifyToken ) {
         try{
+            logger.info("Calling verify User Email");
             User userData = userRepository.findByUsername(verifyEmail);
             if (userData!= null) {
                 if (userData.getVerified() == false) {
-                    statsd.incrementCounter("Verify User API");
+                    statsd.incrementCounter("VerifyUserAPI");
                     dynamodbClient = AmazonDynamoDBClientBuilder.defaultClient();
                     DynamoDB dynamoDB = new DynamoDB(dynamodbClient);
                     Table table = dynamoDB.getTable("csye6225-dynamo");
