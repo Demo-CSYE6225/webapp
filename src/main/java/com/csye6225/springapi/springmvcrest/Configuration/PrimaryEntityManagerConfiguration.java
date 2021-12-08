@@ -50,6 +50,4 @@ public class PrimaryEntityManagerConfiguration {
                 .persistenceUnit("main")
                 .build();
     }
-
-
 }

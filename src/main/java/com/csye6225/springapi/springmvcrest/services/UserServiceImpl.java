@@ -85,12 +85,14 @@ public class UserServiceImpl {
     }
 
     public String[] authenticate_user(List header) {
+        logger.info("Authenticating user");
         long start = System.currentTimeMillis();
         String authorization = header.get(0).toString();
         String base64Credentials = authorization.substring("Basic".length()).trim();
         byte[] credDecoded = Base64.getDecoder().decode(base64Credentials);
         String credentials = new String(credDecoded, StandardCharsets.UTF_8);
         final String[] values = credentials.split(":", 2);
+        logger.info("Checking for user");
         User userdata = userRepository.findByUsername(values[0]);
         long end = System.currentTimeMillis();
         long timeElapsed = end - start;
