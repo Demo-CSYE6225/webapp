@@ -49,5 +49,6 @@ public class PrimaryEntityManagerConfiguration {
                 .packages("com.csye6225.springapi.springmvcrest")
                 .persistenceUnit("main")
                 .build();
+
     }
 }
