@@ -98,7 +98,7 @@ public class UserServiceImpl {
         long timeElapsed = end - start;
         logger.info("Time taken to authenticate user database is " + timeElapsed + "ms");
         statsd.recordExecutionTime("AuthenticateUserDBTime", timeElapsed);
-        if (userdata != null && crypt.checkPassword(values[1], userdata.getPassword()))
+        if (userdata != null && userdata.getVerified() == true && crypt.checkPassword(values[1], userdata.getPassword()))
             return values;
         else
             return null;
@@ -125,7 +125,7 @@ public class UserServiceImpl {
                 logger.info("**********User details fetched successfully !**********");
                 return new ResponseEntity<>(response, HttpStatus.OK);
             }
-            logger.severe("Invalid credentials");
+            logger.severe("Invalid credentials or user not verified");
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
         } catch (Exception e) {
@@ -171,7 +171,7 @@ public class UserServiceImpl {
                     return new ResponseEntity<>(HttpStatus.OK);
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }
-            logger.severe("Invalid credentials");
+            logger.severe("Invalid credentials or user not verified");
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             logger.info("**********Exception!**********");
@@ -290,7 +290,7 @@ public class UserServiceImpl {
                 logger.info("**********Profile details fetched successfully !**********");
                 return new ResponseEntity<>(image, status);
             }
-            logger.severe("Invalid credentials");
+            logger.severe("Invalid credentials or user not verified");
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             logger.info("**********Exception!**********");
@@ -344,7 +344,7 @@ public class UserServiceImpl {
 
                 return new ResponseEntity<>(status);
             }
-            logger.severe("Invalid credentials");
+            logger.severe("Invalid credentials or user not verified");
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             logger.info("**********Exception!**********");
@@ -422,7 +422,7 @@ public class UserServiceImpl {
 
                 return new ResponseEntity<>(HttpStatus.CREATED);
             }
-            logger.severe("Invalid credentials");
+            logger.severe("Invalid credentials or user not verified");
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             logger.info("**********Exception!**********");
